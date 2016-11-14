@@ -1,0 +1,19 @@
+# general things to ignore
+/.idea
+build/
+dist/
+*.egg-info/
+*.egg
+*.py[cod]
+__pycache__/
+*.so
+*~
+# due to using tox and pytest
+.tox
+.cache
+.coverage
+# project specific
+tmp/
+httpwookiee/staging
+tests/docker/*/static
+tests/docker/*/*/static
