@@ -1,0 +1,7 @@
+termcolor
+tox
+configparser
+six
+future
+py2-ipaddress
+argparse
