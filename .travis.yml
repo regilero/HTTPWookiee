@@ -4,6 +4,8 @@ python:
   - "3.4"
   - "3.5"
 # command to install dependencies
-install: "pip install -e ."
+install:
+  - pip install tox
+  - pip install -e .[dev,test]
 # command to run tests
 script: tox -r
