@@ -1,6 +1,9 @@
 HTTP Wookiee
 ============
 
+.. image:: https://travis-ci.org/regilero/HTTPWookiee.svg?branch=master
+    :target: https://travis-ci.org/regilero/HTTPWookiee
+    
 This project is an HTTP 1.1 (rfc 7230) stress tool. The goal is to test web
 servers and reverse proxies RFC compliance on various points of the protocol.
 
