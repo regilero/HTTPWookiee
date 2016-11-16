@@ -10,5 +10,6 @@ before_install:
 install:
   - pip install tox-travis
   - pip install -e .
+  - chmod ugo+x demo.sh
 # command to run tests
-script: demo.sh
+script: ./demo.sh
