@@ -29,3 +29,4 @@ echo "******* docker ps"
 docker ps -a
 # if you want to edit files in a running docker (for tests, do not forget to getyour copy back in conf dir)
 #docker run -i -t --rm --volumes-from wrpnginx_latest --name wookieenginxfiles debian /bin/bash
+cd -
