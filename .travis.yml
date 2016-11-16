@@ -1,10 +1,17 @@
+sudo: required
+services:
+  - docker
 language: python
 python:
   - "2.7"
   - "3.4"
   - "3.5"
+env:
+  - HTTPWOOKIEE_CONF=tests/docker/nginx/latest/config.ini
+before_install:
+  - tests/docker/nginx/build.sh
 # command to install dependencies
 install:
   - pip install tox-travis
 # command to run tests
-script: tox
+script: httpwookiee.py -V
