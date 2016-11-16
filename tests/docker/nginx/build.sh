@@ -1,5 +1,6 @@
 #!/bin/bash
 set -e
+cd "$(dirname "$0")"
 echo "******* copying static resources here (yep, Dockerfile hack...)"
 cp -ar ../../../httpwookiee/static ./latest/
 cp -ar ../../../httpwookiee/static ./stable/
