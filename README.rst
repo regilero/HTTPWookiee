@@ -3,7 +3,7 @@ HTTP Wookiee
 
 .. image:: https://travis-ci.org/regilero/HTTPWookiee.svg?branch=master
     :target: https://travis-ci.org/regilero/HTTPWookiee
-    
+
 This project is an HTTP 1.1 (rfc 7230) stress tool. The goal is to test web
 servers and reverse proxies RFC compliance on various points of the protocol.
 
@@ -22,8 +22,11 @@ backend server of this proxy, steps 1 to 5).
 Warning
 ********
 
-**There are not a lot of tests in this release. We are still waiting for some fixs on major products ...**
 
+**Tests may report false positives and wrong levels of criticity. Hard to catch
+all the existing behaviors of all http servers. But some tests are really exact
+(like double content-lenght issues or content-length+chunked, read the code for
+comments and ask me if you wonder about a specific problem).**
 
 **Never try to run theses tests on a public network or on public websites.
 Even testing your own website may be dangerous if an unknown reverse proxy is
