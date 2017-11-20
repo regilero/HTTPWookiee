@@ -7,6 +7,7 @@ from httpwookiee.core.result import TextStatusResult
 from httpwookiee.core.testrunner import WookieeTestRunner
 from httpwookiee.config import ConfigFactory
 import httpwookiee.client.tests_regular
+import httpwookiee.client.tests_expect
 # import httpwookiee.client.tests_first_line
 # import httpwookiee.client.tests_content_length
 # import httpwookiee.client.tests_chunks
@@ -40,6 +41,7 @@ if __name__ == '__main__':
     classes.append(tests.messages)
     classes.append(tests.internal_server)
     classes.append(httpwookiee.client.tests_regular)
+    classes.append(httpwookiee.client.tests_expect)
     # classes.append(httpwookiee.client.tests_first_line)
     # classes.append(httpwookiee.client.tests_content_length)
     # classes.append(httpwookiee.client.tests_chunks)
@@ -53,7 +55,8 @@ if __name__ == '__main__':
               for classobj in testcases]
     testSuite = unittest.TestSuite(suites)
     # without stream forced here python 2.7 is failing
-    WookieeTestRunner(resultclass=TextStatusResult,
-                      verbosity=verbosity,
-                      buffer=True,
-                      stream=sys.stderr).run(testSuite)
+    sys.exit(not WookieeTestRunner(resultclass=TextStatusResult,
+                                   verbosity=verbosity,
+                                   buffer=True,
+                                   stream=sys.stderr
+                                   ).run(testSuite).wasSuccessful())

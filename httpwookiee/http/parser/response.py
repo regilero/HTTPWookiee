@@ -9,11 +9,24 @@ class Response(Message):
 
     ERROR_BAD_FIRST_LINE = 'Bad First line in Response'
     ERROR_HTTP09_RESPONSE = 'This is an HTTP/0.9 Response'
+    ERROR_UNEXPECTED_CONTENT_LENGTH_HEADER = ('This sort of response must not'
+                                              ' contain a Content-length'
+                                              ' Header')
 
     def __init__(self):
         super(Response, self).__init__()
         self.name = u'Response'
         self.short_name = u'Resp.'
+        self.interim_responses = []
+
+    def render_iterim_parts(self):
+        "For responses, representation of interim responses"
+        out = ""
+        if (len(self.interim_responses) > 0):
+            out += " ** Interim responses detected **\n"
+            for interim in self.interim_responses:
+                out += "\nINTERIM RESPONSE:\n{0}\n".format(interim)
+        return out
 
     def _parse_first_line(self, first_line):
         'Response implementation of HTTP message 1st line'
@@ -43,15 +56,38 @@ class Response(Message):
             self.body = data
         return self.STATUS_COMPLETED
 
+    def detect_empty_body_conditions(self, parent_request_method):
+        "https://tools.ietf.org/html/rfc7230#section-3.3 Message Body"
+        if ((self.code in (204, 304, 100, 101)) or
+                (parent_request_method == 'HEAD') or
+                (parent_request_method == 'CONNECT' and self.code == 200)):
+            self.body_size = 0
+            self.empty_body_expected = True
+            # https://tools.ietf.org/html/rfc7230#section-3.3.2
+            if self.has_cl and self.code in (204, 100, 101):
+                # response is bad, it should not contain a Content-Length
+                # header
+                self.setError(self.ERROR_UNEXPECTED_CONTENT_LENGTH_HEADER,
+                              critical=False)
+
     def get_expected_body_size(self):
         "Return expected body size. Requests and responses are different"
+        if self.empty_body_expected:
+            return 0
+
+        # Note that chunked messages are not coming in this section
         if not self.has_cl:
-            # FIXME:
-            # without Content-Length information:
-            # unless request method is HEAD, response status is 1xx 204 or 304
-            # Unless a 2xx responses after a CONNECT
-            # unless chunked is the last Transfer-Encoding
-            # For responses the body size is the whole message.
             return self.READ_UNTIL_THE_END
         else:
             return self.body_size
+
+    def had_interim_responses(self):
+        return (len(self.interim_responses) > 0)
+
+    def is_interim_response(self):
+        return ((self.body == b'') and
+                (self.body_size == 0) and
+                (self.code == 100) and
+                (self.first_line.value == u'Continue')
+                # (self.headers == []) and
+                )

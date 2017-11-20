@@ -4,6 +4,7 @@
 # Internal Tests
 #
 from httpwookiee.http.parser.requests import Requests
+from httpwookiee.http.parser.responses import Responses
 import unittest
 import sys
 
@@ -354,7 +355,7 @@ class Test_Request_Repr(unittest.TestCase):
         obtained = str(req).split(u'\n')
 
         should = [(u'******INVALID Requests STREAM '
-                  u'< Has invalid Message;>******'),
+                   u'< Has invalid Message;>******'),
                   u'-1 Requests-',
                   u'---',
 
@@ -563,3 +564,100 @@ class Test_Request_Repr(unittest.TestCase):
         self.assertEqual(should, obtained)
         # TODO: space before size
         # TODO: crap in chunk size
+
+    def test_request_bad_expect(self):
+        "Test bad expect rejection message"
+
+        request = (b"GET /foo HTTP/1.0\r\n"
+                   b"Host: example.com\r\n"
+                   b"Expect: something\r\n"
+                   b"\r\n")
+
+        req = Requests().parse(request)
+        obtained = str(req).split(u'\n')
+
+        if sys.version_info[0] < 3:
+            # python2
+            raw = (u'')
+        else:
+            raw = (u"b''")
+        should = [(u'******INVALID Requests STREAM < '
+                   u'Has invalid Message;>******'),
+                  u'-1 Requests-',
+                  u'---',
+                  (u'****INVALID Request < Bad Expect Header;'
+                   '>****'),
+
+                  u' [Req. 1st line]',
+                  u'[GET]<SP> [/foo]<SP> HTTP/[1][.][0] [[CR][LF]]',
+
+                  u' [Req. Headers]',
+                  u'[HOST] [:]<SP> [example.com] [[CR][LF]]',
+                  u'[EXPECT] [:]<SP> [something] [[CR][LF]]',
+                  u' [Req. Body] (size 0)',
+                  raw]
+
+        should.append(u' ++++++++++++++++++++++++++++++++++++++')
+        should.append(u'')
+        should.append(u'---')
+        self.assertEqual(should, obtained)
+
+    def test_request_expect_100_continue(self):
+        "Test messages for interim responses"
+
+        request = (b"GET /foo HTTP/1.0\r\n"
+                   b"Host: example.com\r\n"
+                   b"Expect: 100-continue\r\n"
+                   b"\r\n")
+
+        req = Requests().parse(request)
+        obtained = str(req).split(u'\n')
+
+        if sys.version_info[0] < 3:
+            # python2
+            raw = (u'')
+        else:
+            raw = (u"b''")
+        should = [u'-1 Requests-',
+                  u'---',
+                  u' [Req. 1st line]',
+                  u'[GET]<SP> [/foo]<SP> HTTP/[1][.][0] [[CR][LF]]',
+                  u' [Req. Headers]',
+                  u'[HOST] [:]<SP> [example.com] [[CR][LF]]',
+                  u'[EXPECT] [:]<SP> [100-continue] [[CR][LF]]',
+                  u' [Req. Body] (size 0)',
+                  raw]
+        should.append(u' ++++++++++++++++++++++++++++++++++++++')
+        should.append(u'')
+        should.append(u'---')
+
+        response = (b"HTTP/1.1 100 Continue\r\n"
+                    b"\r\n"
+                    b"HTTP/1.1 204 No Content\r\n"
+                    b"\r\n")
+
+        req = Responses().parse(response)
+        obtained = str(req).split(u'\n')
+
+        should = [u'-1 Responses-',
+                  u'---',
+                  u' ** Interim responses detected **',
+                  u'',
+                  u'INTERIM RESPONSE:',
+                  u' [Resp. 1st line]',
+                  u'HTTP/[1][.][1] [100] [Continue] [[CR][LF]]',
+                  u' [Resp. Headers]',
+                  u' [Resp. Body] (size 0)',
+                  raw,
+                  u' ++++++++++++++++++++++++++++++++++++++',
+                  u'',
+                  u' [Resp. 1st line]',
+                  u'HTTP/[1][.][1] [204] [No Content] [[CR][LF]]',
+                  u' [Resp. Headers]',
+                  u' [Resp. Body] (size 0)',
+                  raw]
+
+        should.append(u' ++++++++++++++++++++++++++++++++++++++')
+        should.append(u'')
+        should.append(u'---')
+        self.assertEqual(should, obtained)

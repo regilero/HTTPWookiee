@@ -66,8 +66,9 @@ class HttpServerThread(threading.Thread):
             else:
                 self.queue = 5
 
-        if (self.in_queue is None or self.out_queue is None
-                or self.err_queue is None):
+        if (self.in_queue is None or
+                self.out_queue is None or
+                self.err_queue is None):
             raise Exception('no In/Out/Err comm. queues for ServerTHread.')
 
         self.workers = [Worker('WRK1', out_queue=self.out_queue),

@@ -27,6 +27,7 @@ class Message(object):
     ERROR_CONTENT_LENGTH_AND_CHUNKED = 'Has Content-length and chunks'
     ERROR_FIRST_HEADER_OPS_FOLD = ('Has first header in the optional '
                                    'folding format')
+    ERROR_BAD_EXPECT_HEADER = 'Bad Expect Header'
 
     READ_UNTIL_THE_END = -99
 
@@ -40,6 +41,7 @@ class Message(object):
             for error, value in Tools.iteritems(self.errors):
                 out += " {0};".format(error)
             out += ">****\n"
+        out += self.render_iterim_parts()
         out += " [{0} 1st line]\n{1}".format(self.short_name, self.first_line)
         out += " [{0} Headers]\n".format(self.short_name)
         for header in self.headers:
@@ -60,6 +62,10 @@ class Message(object):
         out += "\n ++++++++++++++++++++++++++++++++++++++\n"
         return out
 
+    def render_iterim_parts(self):
+        "For responses, representation of interim responses"
+        return ""
+
     def __init__(self):
         self.valid = True
         self.errors = {}
@@ -74,6 +80,8 @@ class Message(object):
         self.chunk_size = 0
         self.name = u'Message'
         self.short_name = u'Msg.'
+        self.empty_body_expected = False
+        self.expect_100_continue = False
         # for multiline headers
         self.has_previous_header = False
 
@@ -151,6 +159,16 @@ class Message(object):
                     if 'chunked' in hval:
                         self.setError(self.ERROR_BAD_CHUNKED_HEADER)
 
+            if 'EXPECT' == header.header:
+                if self.name == u'Response':
+                    # that's only for requests
+                    self.setError(self.ERROR_BAD_EXPECT_HEADER)
+                hval = header.value.strip()
+                if hval == '100-continue':
+                    self.expect_100_continue = True
+                else:
+                    self.setError(self.ERROR_BAD_EXPECT_HEADER)
+
     def parse_chunk_header(self, line):
         chunk = Chunk().parse(line)
         self.chunks.append(chunk)
@@ -201,6 +219,9 @@ class Message(object):
             return self.STATUS_COMPLETED
         else:
             return self.STATUS_CHUNK_HEADER
+
+    def is_interim_response():
+        return False
 
     def setError(self, msgidx, critical=True):
         self.errors[msgidx] = True

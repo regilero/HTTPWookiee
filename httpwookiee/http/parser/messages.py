@@ -52,12 +52,20 @@ class Messages(object):
     def __len__(self):
         return len(self.messages)
 
-    def parse(self, bufferstr, compute_content_length=True):
-        "Parse an HTTP message."
-        self.extract_messages(bufferstr, compute_content_length)
+    def parse(self,
+              bufferstr,
+              compute_content_length=True,
+              requests_infos=None):
+        "Parse an HTTP message (may contain several messages)."
+        self.extract_messages(bufferstr,
+                              compute_content_length,
+                              requests_infos)
         return self
 
-    def extract_messages(self, bufferstr, compute_content_length=True):
+    def extract_messages(self,
+                         bufferstr,
+                         compute_content_length=True,
+                         requests_infos=None):
         full_len = len(bufferstr)
         self.byteidx = 0
         self.parsed_idx = 0
@@ -68,29 +76,43 @@ class Messages(object):
         while self.byteidx < full_len:
             try:
                 # print('extraction {0}!{1}'.format(self.byteidx, full_len))
-                msg = self.extract_one_message(compute_content_length)
+                # this is for responses, they may have a related parent method
+                # listed in requests_infos (for HEAD/CONNECT, etc)
+                parent_request_method = None
+                if ((requests_infos is not None) and
+                        (len(requests_infos) > self.count)):
+                    parent_request_method = requests_infos[self.count]
+
+                msg = self.extract_one_message(compute_content_length,
+                                               parent_request_method)
             except OptionalCRLFSeparator:
-                # this is not an error, aised only at end of buffer
+                # this is not an error, raised only at end of buffer
                 # so we can safely break the loop
                 break
             except PrematureEndOfStream:
                 msg = False
                 self.setError(self.ERROR_INCOMPLETE_STREAM)
 
-            if msg is not False:
-                self.count = self.count + 1
-                self.parsed_idx = self.byteidx
-                self.messages.append(msg)
-                if not msg.valid:
-                    # print(msg)
-                    self.setError(self.ERROR_HAS_INVALID_MESSAGE)
-                elif msg.error:
-                    # print(msg)
-                    self.setError(self.ERROR_HAS_BAD_MESSAGE, critical=False)
-            else:
-                self.setError(self.ERROR_HAS_INVALID_MESSAGE)
+            self.check_message_status(msg)
 
-    def extract_one_message(self, compute_content_length=True):
+    def check_message_status(self, msg):
+        "@see responses for interim responses specific stuff"
+        if msg is not False:
+            self.count = self.count + 1
+            self.messages.append(msg)
+            if not msg.valid:
+                # print(msg)
+                self.setError(self.ERROR_HAS_INVALID_MESSAGE)
+            elif msg.error:
+                # print(msg)
+                self.setError(self.ERROR_HAS_BAD_MESSAGE, critical=False)
+            self.parsed_idx = self.byteidx
+        else:
+            self.setError(self.ERROR_HAS_INVALID_MESSAGE)
+
+    def extract_one_message(self,
+                            compute_content_length=True,
+                            parent_request_method=None):
         """Return one HTTP Request or response, and set the internal buffer
         index right after that message."""
         msg = self._getMessage()
@@ -106,8 +128,12 @@ class Messages(object):
                 status = msg.parse_header_line(line)
 
             msg.analyze_headers(compute_content_length)
-            if status == Message.STATUS_BODY and msg.chunked:
+            msg.detect_empty_body_conditions(parent_request_method)
+            if ((status == Message.STATUS_BODY) and
+                    (msg.chunked) and
+                    (not msg.empty_body_expected)):
                 status = Message.STATUS_CHUNK_HEADER
+
             # Parse body, abstract binary content lines------
             while status != Message.STATUS_COMPLETED:
 
@@ -115,7 +141,7 @@ class Messages(object):
 
                     # FIXME: here we may have a problem if our current buffer
                     # is shorter than the whole received message (in 0.9 or if
-                    # no Content-Length header was transmitted...
+                    # no Content-Length header was transmitted...)
                     if msg.version_major == 0 and msg.version_minor == 9:
                         # http 0.9 request or response, read all
                         size_of_body = len(self.bytesbuff) - self.byteidx

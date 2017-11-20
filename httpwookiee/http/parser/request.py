@@ -34,15 +34,19 @@ class Request(Message):
         else:
             return self.STATUS_HEADERS
 
+    def detect_empty_body_conditions(self, parent_request_method):
+        "https://tools.ietf.org/html/rfc7230#section-3.3 Message Body"
+        # In requests, no conditions are enforcing an empty body,
+        # only in responses
+        self.empty_body_expected = False
+
     def get_expected_body_size(self):
         "Return expected body size. Requests and responses are different"
         # WARNING: @see request and response implementations
         if not self.has_cl:
-            # FIXME:
             # without Content-Length information:
-            # unless request method is HEAD, response status is 1xx 204 or 304
-            # Unless a 2xx responses after a CONNECT
-            # unless chunked is the last Transfer-Encoding
+            # We are not in a chunked message (method not called)
+            # https://tools.ietf.org/html/rfc7230#section-3.3.3 [6]
             # For requests we could consider it a 0 sized messages
             return 0
         else:

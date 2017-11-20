@@ -45,6 +45,7 @@ class Worker(object):
         self.out_queue = out_queue
         self.initDefaultBehavior()
         self.setReady()
+        self.response_code = 200
 
     def setReady(self):
         self.ready = True
@@ -243,6 +244,26 @@ class Worker(object):
                 detected = True
         return detected
 
+    def handle_expect_100(self, request):
+        "On a query containg an expect 100 we pre-send a 100-continue"
+        # FIXME: should be done before having received the full request body
+        if (self.behavior.enforce_100_continue or
+                (request.expect_100_continue and
+                    self.behavior.respect_expect100)):
+            self.output += b'HTTP/1.1 100 Continue\r\n\r\n'
+
+    def body_allowed(self, request):
+        "Some requests forbids body content"
+        if ((self.response_code in (204, 304)) or
+                (self.response_code in (100,) and
+                    self.behavior.respect_expect100) or
+                (request.method == 'HEAD' and self.behavior.respect_head) or
+                (request.method == 'CONNECT' and self.response_code == 200 and
+                    self.behavior.respect_connect)):
+            return False
+        else:
+            return True
+
     def send_responses(self):
         """Prepare the responses stream output.
         """
@@ -256,7 +277,7 @@ class Worker(object):
                 position = position + 1
                 if (self.behavior.add_wookiee_response and
                         position == self.behavior.wookiee_stream_position):
-                    self.send_wookiee()
+                    self.send_wookiee(request=request)
                     # add an allowed extra response separator
                     self.output += b"\r\n"
                 # TODO: behavior timer between wookiee and responses?
@@ -271,23 +292,25 @@ class Worker(object):
                     # even if asked to keep conn alive on errors, we cannot
                     # keep a conn alive after an http/0.9 request
                     # every incoming data is just crap from 1st query
-                    close = ((request.http09)
-                             or not(self.behavior.keep_alive_on_error))
+                    close = ((request.http09) or
+                             not(self.behavior.keep_alive_on_error))
                     self.send_400(headers=not(request.http09),
-                                  close=close)
+                                  close=close,
+                                  request=request)
                     if close:
                         break
                 position = position + 1
                 if (self.behavior.add_wookiee_response and
                         position == self.behavior.wookiee_stream_position):
-                    self.send_wookiee()
+                    self.send_wookiee(request=request)
                     # add an allowed extra response separator
                     self.output += b"\r\n"
 
     def send_ok(self,
+                request,
                 headers=True,
-                close=False,
-                request=None):
+                close=False):
+        self.response_code = 200
         if request is not None:
             wlocation = self.config.get('BACKEND_WOOKIEE_LOCATION')
             # add support for proxies misconfigured, with no prefix path
@@ -295,9 +318,11 @@ class Worker(object):
             prewlocation = '{0}{1}'.format(
                 self.config.get('BACKEND_LOCATION_PREFIX'),
                 self.config.get('BACKEND_WOOKIEE_LOCATION'))
-            if (request.first_line.location == wlocation
-                    or request.first_line.location == prewlocation):
-                return self.send_wookiee()
+            if (request.first_line.location == wlocation or
+                    request.first_line.location == prewlocation):
+                return self.send_wookiee(request=request)
+
+        self.handle_expect_100(request=request)
 
         body = b"Hello, World!\r\nIt works!\r\n"
         if self.behavior.alt_content:
@@ -317,11 +342,14 @@ class Worker(object):
             else:
                 self.output += b"Connection: keep-alive\r\n"
             self.output += b"\r\n"
-        self.output += body
+        if self.body_allowed(request):
+            self.output += body
         if close:
             self.keepalive = False
 
-    def send_400(self, headers=True, close=True):
+    def send_400(self, request, headers=True, close=True):
+        self.response_code = 400
+        self.handle_expect_100(request=request)
         if headers:
             self.output += b"HTTP/1.1 400 Bad Request\r\n"
             self.output += b"Content-Type: text/html; charset=utf-8\r\n"
@@ -333,9 +361,12 @@ class Worker(object):
             self.output += b"\r\n"
         if close:
             self.keepalive = False
-        self.output += b"400, Bad Request. GFY!\r\n"
+        if self.body_allowed(request):
+            self.output += b"400, Bad Request. GFY!\r\n"
 
-    def send_wookiee(self, headers=True, close=False):
+    def send_wookiee(self, request, headers=True, close=False):
+        self.response_code = 200
+        self.handle_expect_100(request=request)
         wookiee = b"""<html><body>Wookiee !<hr/><pre>
        .             ``.--::-.`          //      //     .      || ||    .   .
                 . `-+hdmNNNNNmdys/.     |||. || |||   .        ||//  ||
@@ -389,4 +420,5 @@ MMMNMMMMMMNMMMMNhdmdMMMMMMMNNNMMNydNMMMMMMMMMMMMmy.s+-hMMMMMMMMMMMmhNMMdNMmyy+`
         if close:
             self.keepalive = False
 
-        self.output += wookiee
+        if self.body_allowed(request):
+            self.output += wookiee

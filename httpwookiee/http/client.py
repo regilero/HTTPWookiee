@@ -146,7 +146,7 @@ class Client(object):
                                             errmsg))
                 return
 
-    def read_all(self, timeout=None, buffsize=None):
+    def read_all(self, timeout=None, buffsize=None, requests_infos=None):
         """Read all the stream, waiting for EOS, return all responses."""
         output = ''
         if timeout is None:
@@ -163,7 +163,7 @@ class Client(object):
 
         inmsg('# <====FINAL RESPONSE===============')
         inmsg(output)
-        responses = Responses().parse(output)
+        responses = Responses().parse(output, requests_infos=requests_infos)
         return responses
 
     def _socket_send(self, message):

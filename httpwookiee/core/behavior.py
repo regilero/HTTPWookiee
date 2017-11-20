@@ -23,6 +23,10 @@ class Behavior(object):
         self.echo_query = False
         self.echo_incomplete_query = False
         self.alt_content = False
+        self.respect_head = True
+        self.respect_connect = False
+        self.respect_expect100 = True
+        self.enforce_100_continue = False
 
     def setRegularDefaults(self):
         "Settings for a regular HTTP server."
@@ -33,6 +37,10 @@ class Behavior(object):
         self.echo_query = False
         self.echo_incomplete_query = False
         self.alt_content = False
+        self.respect_head = True
+        self.respect_connect = False
+        self.respect_expect100 = True
+        self.enforce_100_continue = False
 
     def __str__(self):
         out = "Behavior: \n"
@@ -51,4 +59,12 @@ class Behavior(object):
             out += " * Echo Incomplete query stream to thread message canal\n"
         if self.alt_content:
             out += " * ok response contains non default expected content\n"
+        if self.respect_head:
+            out += " * HEAD request allowed\n"
+        if self.respect_connect:
+            out += " * CONNECT request allowed\n"
+        if self.respect_expect100:
+            out += " * expect 100 continue allowed\n"
+        if self.enforce_100_continue:
+            out += " * 100 continue pre-responses enforced\n"
         return out

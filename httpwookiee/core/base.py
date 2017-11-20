@@ -32,9 +32,11 @@ class BaseTest(unittest.TestCase):
     STATUS_ERR403 = 'Err403'
     STATUS_ERR404 = 'Err404'
     STATUS_ERR405 = 'Err405'
+    STATUS_ERR407 = 'Err407'
     STATUS_ERR411 = 'Err411'
     STATUS_ERR413 = 'Err413'
     STATUS_ERR414 = 'Err414'
+    STATUS_ERR417 = 'Err417'
     STATUS_ERR500 = 'Err500'
     STATUS_501_NOT_IMPLEMENTED = '501NotImpl.'
     STATUS_5032 = '502or5023'
@@ -56,9 +58,11 @@ class BaseTest(unittest.TestCase):
         STATUS_ERR403: {'long': u'-err403-', 'short': u'4'},
         STATUS_ERR404: {'long': u'-err404-', 'short': u'4'},
         STATUS_ERR405: {'long': u'-err405-', 'short': u'4'},
+        STATUS_ERR407: {'long': u'-err407-', 'short': u'4'},
         STATUS_ERR411: {'long': u'-err411-', 'short': u'4'},
         STATUS_ERR413: {'long': u'-err413-', 'short': u'4'},
         STATUS_ERR414: {'long': u'-err414-', 'short': u'4'},
+        STATUS_ERR417: {'long': u'-err417-', 'short': u'4'},
         STATUS_ERR500: {'long': u'-err500-', 'short': u'5'},
         STATUS_RED_301: {'long': u'-red301-', 'short': u'3'},
         STATUS_RED_302: {'long': u'-red302-', 'short': u'3'},
@@ -99,6 +103,7 @@ class BaseTest(unittest.TestCase):
             self.send_mode = self.SEND_MODE_UNIQUE
         self.use_backend_location = False
         self.reverse_proxy_mode = False
+        self.interim_responses = 0
         super(BaseTest, self).__init__(methodName)
         self.addCleanup(self.CustomCleanup)
 
@@ -398,6 +403,8 @@ class BaseTest(unittest.TestCase):
             self.setStatus(self.STATUS_SPLITTED)
         else:
             for response in responses:
+                if response.had_interim_responses():
+                    self.interim_responses += len(response.interim_responses)
                 # Continue checking while test status is undecided or while
                 # all responses are accepted
                 if (self.STATUS_UNKNOWN == self.status or
@@ -452,6 +459,9 @@ class BaseTest(unittest.TestCase):
             if (b"405" in response.body and
                     b"Method Not Allowed" in response.body):
                 self.setStatus(self.STATUS_ERR405)
+            if (b"407" in response.body and
+                    b"Proxy Authentication Required" in response.body):
+                self.setStatus(self.STATUS_ERR407)
             if (b"411" in response.body and
                     b"Length Required" in response.body):
                 self.setStatus(self.STATUS_ERR411)
@@ -461,6 +471,9 @@ class BaseTest(unittest.TestCase):
             if (b"414" in response.body and
                     b"Request URI too long" in response.body):
                 self.setStatus(self.STATUS_ERR414)
+            if (b"417" in response.body and
+                    b"Expectation Failed" in response.body):
+                self.setStatus(self.STATUS_ERR417)
             if (b"501" in response.body and
                     b"Not Implemented" in response.body):
                 self.setStatus(self.STATUS_501_NOT_IMPLEMENTED)
@@ -488,6 +501,10 @@ class BaseTest(unittest.TestCase):
                 self.setStatus(self.STATUS_ERR414)
             if 405 == response.code:
                 self.setStatus(self.STATUS_ERR405)
+            if 407 == response.code:
+                self.setStatus(self.STATUS_ERR407)
+            if 417 == response.code:
+                self.setStatus(self.STATUS_ERR417)
             if 501 == response.code:
                 self.setStatus(self.STATUS_501_NOT_IMPLEMENTED)
             if 505 == response.code:
