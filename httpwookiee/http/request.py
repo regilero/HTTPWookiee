@@ -13,10 +13,10 @@ class Request:
     def __init__(self, wookiee_id=0, host=None):
         self.config = ConfigFactory.getConfig()
         self.headers = [{
-            'name': u'\u0058\u002d\u0042\u006c\u006F'
-                    + u'\u0063\u006b\u002d\u004d\u0065',
-            'value': u'\u0070l\u0065\u0061\u0073\u0065'
-                    + u'\x20@ spambot_irc + select union',
+            'name': u'\u0058\u002d\u0042\u006c\u006F' +
+                    u'\u0063\u006b\u002d\u004d\u0065',
+            'value': u'\u0070l\u0065\u0061\u0073\u0065' +
+                     u'\x20@ spambot_irc + select union',
             'sep': u': ',
             'eol': Tools.CRLF}]
         self.wookiee_id = wookiee_id
@@ -273,8 +273,7 @@ class Request:
         return out
 
     def record_bytes_to_send(self, sbytes):
-        for sbyte in [sbytes[i:i+1]
-                      for i in range(len(sbytes))]:
+        for sbyte in [sbytes[i:i + 1] for i in range(len(sbytes))]:
             self._strange_bytes_records.append(sbyte)
 
     def getBytesStream(self):

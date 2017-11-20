@@ -113,7 +113,7 @@ class AbstractTestNonDefaultHost(BaseTest):
 
     def _get_expected_content(self):
         return self.config.get(
-                'SERVER_NON_DEFAULT_LOCATION_CONTENT').encode('utf8')
+            'SERVER_NON_DEFAULT_LOCATION_CONTENT').encode('utf8')
 
     def test_5002_preflight_non_default_vhost(self):
         """Check that the non default vhost works and can be identified

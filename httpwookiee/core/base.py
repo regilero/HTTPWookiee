@@ -108,8 +108,8 @@ class BaseTest(unittest.TestCase):
 
     def setUp(self):
         super(BaseTest, self).setUp()
-        if (not self.reverse_proxy_mode
-                and self.config.getboolean('REVERSEPROXY_TESTS_ONLY')):
+        if (not self.reverse_proxy_mode and
+                self.config.getboolean('REVERSEPROXY_TESTS_ONLY')):
             self.skipTest('Only Reverse Proxy (server) tests are '
                           'allowed by config')
         self._prepare_queries()
@@ -299,8 +299,8 @@ class BaseTest(unittest.TestCase):
 
         self.assertNotEqual(self.status,
                             self.STATUS_WOOKIEE,
-                            'Wookiee response detected,'
-                            + ' this should never happen.')
+                            ('Wookiee response detected,'
+                             ' this should never happen.'))
         self.assertIn(self.status,
                       [self.STATUS_REJECTED,
                        self.STATUS_ERR400,
@@ -400,22 +400,22 @@ class BaseTest(unittest.TestCase):
             for response in responses:
                 # Continue checking while test status is undecided or while
                 # all responses are accepted
-                if (self.STATUS_UNKNOWN == self.status
-                        or self.STATUS_ACCEPTED == self.status):
+                if (self.STATUS_UNKNOWN == self.status or
+                        self.STATUS_ACCEPTED == self.status):
                     self.check_for_errors(response)
-                if (self.STATUS_UNKNOWN == self.status
-                        or self.STATUS_ACCEPTED == self.status):
+                if (self.STATUS_UNKNOWN == self.status or
+                        self.STATUS_ACCEPTED == self.status):
                     self.check_for_redirect(response)
-                if (self.STATUS_UNKNOWN == self.status
-                        or self.STATUS_ACCEPTED == self.status):
+                if (self.STATUS_UNKNOWN == self.status or
+                        self.STATUS_ACCEPTED == self.status):
                     self.check_for_regular_content(
                         response,
                         http09_allowed=http09_allowed,
                         required=regular_expected)
                 # check_for_regular_content may have set self.STATUS_09OK
-                if (999 == response.code
-                        and not http09_allowed
-                        and self.status != self.STATUS_09OK):
+                if (999 == response.code and
+                        not http09_allowed and
+                        self.status != self.STATUS_09OK):
                     self.setStatus(self.STATUS_09DOWNGRADE)
                     # raise AssertionError('Unauthorized HTTP/0.9 response')
 
@@ -431,45 +431,45 @@ class BaseTest(unittest.TestCase):
 
     def check_for_errors(self, response):
 
-        if ((b"      -mMMNNdhdmhyhNs/mmy+mmyyy+shdo/-...." in response.body)
-                and (b"``.-:/mdMNmh++dNddddh+hmod+/ohdy" in response.body)
-                and (b"Wookiee !" in response.body)):
+        if ((b"      -mMMNNdhdmhyhNs/mmy+mmyyy+shdo/-..." in response.body) and
+                (b"``.-:/mdMNmh++dNddddh+hmod+/ohdy" in response.body) and
+                (b"Wookiee !" in response.body)):
             self.setStatus(self.STATUS_WOOKIEE)
 
         elif Response.ERROR_HTTP09_RESPONSE in response.errors:
-            if (b"400" in response.body
-                    and b"Bad Request" in response.body):
+            if (b"400" in response.body and
+                    b"Bad Request" in response.body):
                 self.setStatus(self.STATUS_ERR400)
-            if (b"401" in response.body
-                    and b"Unauthorized" in response.body):
+            if (b"401" in response.body and
+                    b"Unauthorized" in response.body):
                 self.setStatus(self.STATUS_ERR401)
-            if (b"403" in response.body
-                    and b"Forbidden" in response.body):
+            if (b"403" in response.body and
+                    b"Forbidden" in response.body):
                 self.setStatus(self.STATUS_ERR403)
-            if (b"404" in response.body
-                    and b"Not Found" in response.body):
+            if (b"404" in response.body and
+                    b"Not Found" in response.body):
                 self.setStatus(self.STATUS_ERR404)
-            if (b"405" in response.body
-                    and b"Method Not Allowed" in response.body):
+            if (b"405" in response.body and
+                    b"Method Not Allowed" in response.body):
                 self.setStatus(self.STATUS_ERR405)
-            if (b"411" in response.body
-                    and b"Length Required" in response.body):
+            if (b"411" in response.body and
+                    b"Length Required" in response.body):
                 self.setStatus(self.STATUS_ERR411)
-            if (b"413" in response.body
-                    and b"Request Entity Too Large" in response.body):
+            if (b"413" in response.body and
+                    b"Request Entity Too Large" in response.body):
                 self.setStatus(self.STATUS_ERR413)
-            if (b"414" in response.body
-                    and b"Request URI too long" in response.body):
+            if (b"414" in response.body and
+                    b"Request URI too long" in response.body):
                 self.setStatus(self.STATUS_ERR414)
-            if (b"501" in response.body
-                    and b"Not Implemented" in response.body):
+            if (b"501" in response.body and
+                    b"Not Implemented" in response.body):
                 self.setStatus(self.STATUS_501_NOT_IMPLEMENTED)
-            if (b"505" in response.body
-                    and b"Not Supported" in response.body):
+            if (b"505" in response.body and
+                    b"Not Supported" in response.body):
                 self.setStatus(self.STATUS_505_NOT_SUPPORTED)
-            if ((b"502" in response.body or b"503" in response.body)
-                    and (b"Bad gateway" in response.body
-                         or b"Service Unavailable" in response.body)):
+            if ((b"502" in response.body or b"503" in response.body) and
+                    (b"Bad gateway" in response.body or
+                     b"Service Unavailable" in response.body)):
                 self.setStatus(self.STATUS_5032)
         else:
             if 400 == response.code:
@@ -499,11 +499,11 @@ class BaseTest(unittest.TestCase):
 
     def check_for_redirect(self, response):
         if Response.ERROR_HTTP09_RESPONSE in response.errors:
-            if (b"301" in response.body
-                    and b"Moved Permanently" in response.body):
+            if (b"301" in response.body and
+                    b"Moved Permanently" in response.body):
                 self.setStatus(self.STATUS_RED_301)
-            elif (b"302" in response.body
-                    and b"Found" in response.body):
+            elif (b"302" in response.body and
+                    b"Found" in response.body):
                 self.setStatus(self.STATUS_RED_302)
         else:
             if 301 == response.code:

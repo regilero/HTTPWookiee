@@ -202,8 +202,8 @@ class FirstRequestHeader(Line):
                 char5 = self.read_char()
             except IndexError:
                 raise PrematureEndOfStream
-            if (u"E" == char and u"L" == char2 and u"E" == char3
-                    and u"T" == char4 and u"E" == char5):
+            if (u"E" == char and u"L" == char2 and u"E" == char3 and
+                    u"T" == char4 and u"E" == char5):
                 self.method = u'DELETE'
                 return self.STATUS_AFTER_METHOD
 
@@ -215,8 +215,8 @@ class FirstRequestHeader(Line):
                 char4 = self.read_char()
             except IndexError:
                 raise PrematureEndOfStream
-            if (u"R" == char and u"A" == char2 and u"C" == char3
-                    and u"E" == char5):
+            if (u"R" == char and u"A" == char2 and u"C" == char3 and
+                    u"E" == char5):
                 self.method = u'TRACE'
                 return self.STATUS_AFTER_METHOD
 
@@ -230,8 +230,8 @@ class FirstRequestHeader(Line):
                 char6 = self.read_char()
             except IndexError:
                 raise PrematureEndOfStream
-            if (u"O" == char and u"N" == char2 and u"N" == char3
-                    and u"E" == char4 and u"C" == char5 and u"T" == char6):
+            if (u"O" == char and u"N" == char2 and u"N" == char3 and
+                    u"E" == char4 and u"C" == char5 and u"T" == char6):
                 self.method = u'CONNECT'
                 return self.STATUS_AFTER_METHOD
 
@@ -245,8 +245,8 @@ class FirstRequestHeader(Line):
                 char6 = self.read_char()
             except IndexError:
                 raise PrematureEndOfStream
-            if (u"P" == char and u"T" == char2 and u"I" == char3
-                    and u"O" == char4 and u"N" == char5 and u"S" == char6):
+            if (u"P" == char and u"T" == char2 and u"I" == char3 and
+                    u"O" == char4 and u"N" == char5 and u"S" == char6):
                 self.method = u'OPTIONS'
                 return self.STATUS_AFTER_METHOD
 
@@ -304,10 +304,10 @@ class FirstRequestHeader(Line):
                 char7 = self.read_char()
                 char8 = self.read_char()
                 if u't' == char2 and u't' == char3 and u'p' == char4:
-                    if (u's' == char5
-                            and u':' == char6
-                            and u'/' == char7
-                            and u'/' == char8):
+                    if (u's' == char5 and
+                            u':' == char6 and
+                            u'/' == char7 and
+                            u'/' == char8):
                         self.has_absolute_uri = True
                         self.proto = u'https://'
                         return self.STATUS_ABS_LOCATION_DOMAIN_START

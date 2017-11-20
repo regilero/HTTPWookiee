@@ -118,7 +118,7 @@ class Worker(object):
                 pass
             try:
                 self._sock.close()
-            except:
+            except Exception:
                 pass
             self._sock = None
         self.setReady()
@@ -196,11 +196,11 @@ class Worker(object):
                 self._load_testid_and_behavior(stream_mode=True)
 
                 if self.behavior.echo_incomplete_query:
-                        self.echo_input_stream()
+                    self.echo_input_stream()
 
     def _load_testid_and_behavior(self, stream_mode=False):
-        if (self.test_id is not None
-                and self.detect_test_from_requests(stream_mode)):
+        if (self.test_id is not None and
+                self.detect_test_from_requests(stream_mode)):
             self.behavior = self.getTestBehavior()
         else:
             # this is especially usefull for probe requests

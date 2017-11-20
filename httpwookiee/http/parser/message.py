@@ -95,8 +95,8 @@ class Message(object):
             return self.STATUS_BODY
         else:
             header = Header().parse(line)
-            if (header.error
-                    and Header.ERROR_MULTILINE_OPTIONAL in header.errors):
+            if (header.error and
+                    Header.ERROR_MULTILINE_OPTIONAL in header.errors):
                 # oups, this is in fact the previous header continuation
                 if not self.has_previous_header:
                     self.setError(self.ERROR_FIRST_HEADER_OPS_FOLD)

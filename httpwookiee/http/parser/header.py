@@ -120,8 +120,8 @@ class Header(Line):
         # All visible ascii chars are allowed
         # do not use string.printable as this includes FF, BEL and CR, etc
         chars = string.digits + string.ascii_letters + string.punctuation + ' '
-        if ((char not in chars)
-                or (char in Tools.NO_TOKEN_CHARS_VALUES)):
+        if ((char not in chars) or
+                (char in Tools.NO_TOKEN_CHARS_VALUES)):
             self.setError(self.ERROR_INVALID_CHAR_IN_NAME)
             self.header += '<Err>'
         else:

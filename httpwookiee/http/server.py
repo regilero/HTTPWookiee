@@ -168,8 +168,8 @@ class HttpServerThread(threading.Thread):
                 handled = False
                 for worker in self.workers:
                     if worker.ready:
-                        self.inmsg('# New Connection from '
-                                   + '{0} assigned to {1}'.format(
+                        self.inmsg('# New Connection from ' +
+                                   '{0} assigned to {1}'.format(
                                        client_address,
                                        worker.name))
                         worker.init(client_connection, client_address)
@@ -239,7 +239,7 @@ class HttpServerThread(threading.Thread):
             try:
                 self.listen_sock.shutdown(socket.SHUT_RDWR)
                 self.listen_sock.close()
-            except:
+            except Exception:
                 pass
             self.listen_sock = None
         for worker in self.workers:

@@ -164,9 +164,9 @@ class AbstractFirstLineSeparators(BaseTest):
                 self.separator): self.STATUS_TRANSMITTED_CRAP,
             ' HTTP/1.0 H'.format(
                 self.separator): self.STATUS_TRANSMITTED_CRAP,
-            '{0} H'.format(self.separator):  self.STATUS_TRANSMITTED_CRAP,
+            '{0} H'.format(self.separator): self.STATUS_TRANSMITTED_CRAP,
             '{0}HTTP/1.1\r\n'.format(
-                self.separator):  self.STATUS_TRANSMITTED_EXACT,
+                self.separator): self.STATUS_TRANSMITTED_EXACT,
         }
 
         # RFC states that some of the separators, like FF, HTAB, VT, CR
@@ -210,9 +210,9 @@ class AbstractFirstLineSeparators(BaseTest):
             ' HTTP/1.0 H'.format(
                 self.separator): self.STATUS_TRANSMITTED_CRAP,
             'last=marker HTTP/1.0\r\n'.format(
-                self.separator):  self.STATUS_TRANSMITTED_CRAP,
+                self.separator): self.STATUS_TRANSMITTED_CRAP,
             'last=marker HTTP/1.1\r\n'.format(
-                self.separator):  self.STATUS_TRANSMITTED_CRAP,
+                self.separator): self.STATUS_TRANSMITTED_CRAP,
         }
 
         self._add_default_status_map(
@@ -367,9 +367,9 @@ class AbstractFirstLineSeparators(BaseTest):
             ' HTTP/1.0 H'.format(
                 self.separator): self.STATUS_TRANSMITTED_CRAP,
             'last=marker HTTP/1.0\r\n'.format(
-                self.separator):  self.STATUS_TRANSMITTED_CRAP,
+                self.separator): self.STATUS_TRANSMITTED_CRAP,
             'last=marker HTTP/1.1\r\n'.format(
-                self.separator):  self.STATUS_TRANSMITTED_CRAP,
+                self.separator): self.STATUS_TRANSMITTED_CRAP,
         }
 
         self._add_default_status_map(

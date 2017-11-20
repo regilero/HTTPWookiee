@@ -204,7 +204,7 @@ class AbstractTestChunks(BaseTest):
         size_of_first_chunk = len(req2)
         first_chunk_attr = hex(size_of_first_chunk)[2:]
         size_of_first_chunk_size = len(str(first_chunk_attr))
-        wrong_length = size_of_first_chunk_size+2
+        wrong_length = size_of_first_chunk_size + 2
         self.req.add_header('Content-Length', str(wrong_length))
 
         self._add_default_status_map(
@@ -250,7 +250,7 @@ class AbstractTestChunks(BaseTest):
         size_of_first_chunk = len(req2)
         first_chunk_attr = hex(size_of_first_chunk)[2:]
         size_of_first_chunk_size = len(str(first_chunk_attr))
-        wrong_length = size_of_first_chunk_size+2
+        wrong_length = size_of_first_chunk_size + 2
         self.req.add_header('Content-Length', str(wrong_length))
         self.req.add_chunk(req2)
 
@@ -305,9 +305,8 @@ class AbstractTestChunks(BaseTest):
         method = self._get_valid_chunk_method()
         self.req.set_method(method)
         self.setGravity(self.GRAVITY_CRITICAL)
-        self.req.add_header('Transfer-{0}: 42{1}Encoding'.format(
-                                Tools.NULL,
-                                Tools.CRLF),
+        self.req.add_header('Transfer-{0}: 42{1}Encoding'.format(Tools.NULL,
+                                                                 Tools.CRLF),
                             'chunked',
                             sep=':')
         self.req.add_header('Content-Type',

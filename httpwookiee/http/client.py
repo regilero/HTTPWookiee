@@ -82,7 +82,7 @@ class Client(object):
                 outmsg('# Establishing SSL layer')
                 self._sock = ssl.wrap_socket(self._sock,
                                              cert_reqs=ssl.CERT_NONE)
-            except:
+            except Exception:
                 outmsg("[SSL ERROR]")
                 raise Exception('error establishing SSL connection')
 
